@@ -161,25 +161,55 @@ require("lazy").setup({
   spec = {
   ------- LSP Settings -------------------------------------------------------------------
     {
-      "neovim/nvim-lspconfig",
-      event = { "BufReadPre", "BufNewFile" },
-      config = function()
-        local lspconfig = require("lspconfig")
+    "neovim/nvim-lspconfig",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      local lspconfig = require("lspconfig")
+      local util = require("lspconfig/util")
 
-        local on_attach = function(client, bufnr)
+      local root_pattern = util.root_pattern("compile_commands.json", "compile_flags.txt", ".git")
+
+      local on_attach = function(client, bufnr)
         local bufopts = { noremap=true, silent=true, buffer=bufnr }
         vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
       end
 
-      lspconfig.clangd.setup { on_attach = on_attach }
+      lspconfig.clangd.setup {
+        cmd = { "clangd", "--background-index", "--log=verbose", "--clang-tidy", "--completion-style=detailed", "--all-scopes-completion" },
+        filetypes = { "c", "cpp", "objc", "objcpp" },
+        root_dir = function(fname)
+          local filename = util.path.is_absolute(fname) and fname
+            or util.path.join(vim.loop.cwd(), fname)
+          return root_pattern(filename) or util.path.dirname(filename)
+        end,
+        init_options = {
+          compilationDatabasePath = "compile_flags.txt",
+        },
+        on_attach = on_attach,
+        capabilities = vim.lsp.protocol.make_client_capabilities(),
+        flags = {
+          debounce_text_changes = 150,
+        },
+        on_new_config = function(new_config, new_root_dir)
+     
+          local status_ok, clangd_extensions = pcall(require, "clangd_extensions")
+          if status_ok then
+            clangd_extensions.setup({
+              server = {
+                capabilities = vim.lsp.protocol.make_client_capabilities(),
+              }
+            })
+          end
+	end,
+	}
       lspconfig.bashls.setup { on_attach = on_attach }
       lspconfig.tsserver.setup { on_attach = on_attach }
-      end,
+    end,
     },
   ------- LSP cmd Settings ---------------------------------------------------------------
     {
     "hrsh7th/nvim-cmp",
-    event = "InsertEnter",
+    event = { "BufReadPre", "BufNewFile" },
     dependencies = {
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-buffer",
