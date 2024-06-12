@@ -75,12 +75,13 @@ cmd 'colorscheme slate'
 function OpenTerminal()
   vim.cmd('botright split | resize 10 | terminal')
   vim.cmd('startinsert')
+  vim.cmd('setlocal nonumber norelativenumber')
 end
 
 vim.api.nvim_exec([[
   augroup TerminalClose
     autocmd!
-    autocmd TermClose * if !v:event.status | exe 'bd!' | endif
+    autocmd TermClose * if !v:event.status | exe 'bd! ' . expand('<abuf>') | endif
   augroup END
 ]], false)
 
