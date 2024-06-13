@@ -3,6 +3,7 @@
 -- =====================================================================================================================
 
 local pluginEnable = true
+vim.g.mapleader = ' '
 
 -- =====================================================================================================================
 -- @@ Config
@@ -333,7 +334,6 @@ require("lazy").setup({
         require('nvim-tree').setup({
 
         })
-
         vim.api.nvim_set_var('loaded_netrw', 1)
         vim.api.nvim_set_var('loaded_netrwPlugin', 1)
         vim.cmd.colorscheme "slate"
@@ -365,6 +365,16 @@ require("lazy").setup({
         require('telescope').setup{
           defaults = {
             file_ignore_patterns = {"node_modules", ".git"},
+            mappings = {
+              i = {
+                ["<C-j>"] = require('telescope.actions').move_selection_next,
+                ["<C-k>"] = require('telescope.actions').move_selection_previous,
+              },
+              n = {
+                ["<C-j>"] = require('telescope.actions').move_selection_next,
+                ["<C-k>"] = require('telescope.actions').move_selection_previous,
+              },
+            },
           },
           pickers = {
             find_files = {
