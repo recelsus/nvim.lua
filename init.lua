@@ -1,4 +1,4 @@
--- =====================================================================================================================
+-- ==================================================================================================================
 -- @@ init
 -- =====================================================================================================================
 
@@ -66,31 +66,13 @@ opt.splitright = true
 
 opt.syntax = enable
 
-opt.timeoutlen = 300
+opt.timeoutlen = 600
 cmd 'colorscheme slate'
-
--- =====================================================================================================================
--- @@ Terminal
--- =====================================================================================================================
-
-function OpenTerminal()
-  vim.cmd('botright split | resize 10 | terminal')
-  vim.cmd('startinsert')
-  vim.cmd('setlocal nonumber norelativenumber')
-end
-
-vim.api.nvim_exec([[
-  augroup TerminalClose
-    autocmd!
-    autocmd TermClose * if !v:event.status | exe 'bd! ' . expand('<abuf>') | endif
-  augroup END
-]], false)
 
 -- =====================================================================================================================
 -- @@ Preference
 -- =====================================================================================================================
 
-vim.api.nvim_set_keymap('n', '<C-t>', ':lua OpenTerminal()<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('t', '<ESC>', '<C-\\><C-n>', { noremap = true, silent = true })
 
 local function ReplaceColours()
@@ -420,12 +402,61 @@ require("lazy").setup({
         }
       end
     end)(),
+  ------- Markdown Preview Settings -------------------------------------------------
     {
       "iamcco/markdown-preview.nvim",
       cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
       ft = { "markdown" },
       build = function() vim.fn["mkdp#util#install"]() end,    
     },
+  ------- ToggleTerm Settings -------------------------------------------------------
+    {
+      "akinsho/toggleterm.nvim",
+      config = function()
+        local toggleterm = require("toggleterm")
+        toggleterm.setup({
+          size = function(term)
+            if term.direction == "horizontal" then
+              return math.floor(vim.o.lines * 0.3)
+            elseif term.direction == "vertical" then
+              return math.floor(vim.o.columns * 0.4)
+            end
+          end,
+          open_mapping = [[<C-t>]],
+          hide_numbers = true,
+          shade_filetypes = {},
+          shade_terminals = true,
+          shading_factor = 2,
+          start_in_insert = true,
+          insert_mappings = true,
+          persist_size = true,
+          direction = "horizontal",
+          close_on_exit = true,
+          shell = vim.o.shell,
+          float_opts = {
+            border = "single",
+            winblend = 0,
+            highlights = {
+              border = "Normal",
+              background = "Normal",
+            },
+          },
+        })
+        local Terminal = require("toggleterm.terminal").Terminal
+        local lazygit = Terminal:new({ cmd = "lazygit", hidden = true, direction = "float", count = 999 })
+        local lazydocker = Terminal:new({ cmd = "lazydocker", hidden = true, direction = "float", count = 998 })
+
+        function Lazygit_toggle()
+          lazygit:toggle()
+        end
+        vim.keymap.set("n", "<leader>lg", "<cmd>lua Lazygit_toggle()<CR>", { silent = true })
+
+        function Lazydocker_toggle()
+          lazydocker:toggle()
+        end
+        vim.keymap.set("n", "<leader>ld", "<cmd>lua Lazydocker_toggle()<CR>", { silent = true })
+      end,
+    },    
   },
   root = vim.fn.stdpath("config") .. "/plugins",
 })
