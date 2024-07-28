@@ -443,18 +443,6 @@ require("lazy").setup({
           },
         })
         local Terminal = require("toggleterm.terminal").Terminal
-        local lazygit = Terminal:new({ cmd = "lazygit", hidden = true, direction = "float", count = 999 })
-        local lazydocker = Terminal:new({ cmd = "lazydocker", hidden = true, direction = "float", count = 998 })
-
-        function Lazygit_toggle()
-          lazygit:toggle()
-        end
-        vim.keymap.set("n", "<leader>lg", "<cmd>lua Lazygit_toggle()<CR>", { silent = true })
-
-        function Lazydocker_toggle()
-          lazydocker:toggle()
-        end
-        vim.keymap.set("n", "<leader>ld", "<cmd>lua Lazydocker_toggle()<CR>", { silent = true })
       end,
     },    
   },
